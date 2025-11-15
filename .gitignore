@@ -1,0 +1,19 @@
+# Python virtual envs
+*.venv/
+venv/
+ENV/
+env/
+
+# Credentials
+infra/.env
+infra/credentials/
+
+# Bytecode
+__pycache__/
+*.pyc
+
+# OS files
+.DS_Store
+
+# Docker volumes
+db_data/
