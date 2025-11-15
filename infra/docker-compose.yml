@@ -1,0 +1,43 @@
+version: '3.7'
+services:
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER: vision
+        POSTGRES_PASSWORD: vision
+        POSTGRES_DB: visiondb
+    ports:
+      -"5432:5432"
+    volumes:
+      -db_data:/var/lib/postgressql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vision -d visiondb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ../backend
+    depends_on:
+      - db:
+          condition: service_healthy
+    ports:
+      -"8000:8000"
+    environment:
+      - DATABASE_URL=postgressql://vision:vision@db:5432/visiondb
+        ENV=development
+    volumes:
+      -../backend:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  worker:
+    build: ../worker
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgressql://vision:vision@db:5432/visiondb
+    volumes:
+      -..worker:/app
+
+volumes:
+  db_data:

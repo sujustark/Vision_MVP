@@ -1,0 +1,16 @@
+fastapi==0.95.2
+uvicorn[standard]==0.21.1
+SQLAlchemy==1.4.49
+psycopg2-binary==2.9.6
+alembic==1.11.0
+pydantic==1.10.7
+python-dotenv==1.0.0
+faiss-cpu==1.7.4
+opencv-python==4.8.0.74
+numpy==1.25.2
+Pillow==10.1.0
+google-api-python-client==2.89.0
+google-auth==2.22.0
+google-auth-httplib2==0.1.0
+google-auth-oauthlib==1.0.0
+insightface==0.7.3
