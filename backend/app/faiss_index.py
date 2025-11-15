@@ -29,14 +29,13 @@ class EventFaissIndex:
             self.id_map = []
 
     def add(self, vectors: np.ndarray, face_ids: list):
-        # vectors: (N, dim)
-        self.index.add(vectors.astype('float32'))
+        self.index.add(vectors.astype(np.float32)) # type: ignore
         self.id_map.extend(face_ids)
         self._save()
 
     def search(self, query_vec: np.ndarray, k = 5):
         # query_vec: (1, dim) or (N, dim)
-        D, I = self.index.search(query_vec.astype('float32'), k)
+        D, I = self.index.search(query_vec.astype(np.float32), k) # type: ignore
         out = []
         for dist_list, idx_list in zip(D, I):
             row = []

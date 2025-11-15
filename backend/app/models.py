@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean, Text, TIMESTAMP, JSON
 from sqlalchemy.ext.declarative import declarative_base
-from datetime import datetime
+from datetime import datetime, timezone
 
 Base = declarative_base()
 
@@ -11,7 +11,7 @@ class Event(Base):
     token = Column(String, unique = True, index = True)
     storage_path = Column(Text)
     indexed = Column(Boolean, default = False)
-    created_at = Column(TIMESTAMP, default = datetime.timezone.utc)
+    created_at = Column(TIMESTAMP, default = lambda: datetime.now(timezone.utc))
 
 class Face(Base):
     __tablename__ = "faces"
@@ -20,4 +20,4 @@ class Face(Base):
     face_id = Column(String, unique = True, index = True)
     image_path = Column(Text)
     bbox = Column(JSON)
-    created_at = Column(TIMESTAMP, default = datetime.timezone.utc)
+    created_at = Column(TIMESTAMP, default = lambda: datetime.now(timezone.utc))
