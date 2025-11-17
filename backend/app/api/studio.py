@@ -9,7 +9,7 @@ import sqlalchemy
 router = APIRouter()
 
 class RegisterRequest(BaseModel):
-    storage_path = str
+    storage_path: str
 
 class RegisterResponse(BaseModel):
     event_code: str
