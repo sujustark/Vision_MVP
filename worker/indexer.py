@@ -13,7 +13,7 @@ if str(BACKEND_APP) not in sys.path:
     sys.path.insert(0, str(BACKEND_APP))
 
 # DB imports
-from app.db import SessionLocal, engine
+from app.db import SessionLocal
 from app.models import Event, Face
 
 # Simple deterministic embedding
