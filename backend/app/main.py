@@ -6,13 +6,14 @@ from .db import init_db, get_db_session, SessionLocal
 from .models import Event
 from .api.studio import router as studio_router
 from .api.match import router as match_router
+from .api.auth import router as auth_router
 
 app = FastAPI(title="Vision Face MVP - backend")
 
 # Add CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173", "https://*.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -23,8 +24,9 @@ def startup_event():
     # create tables (dev only)
     init_db()
 
-app.include_router(studio_router, prefix="/api/v1/studio")
-app.include_router(match_router, prefix="/api/v1")
+app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
+app.include_router(studio_router, prefix="/api/v1/studio", tags=["studio"])
+app.include_router(match_router, prefix="/api/v1", tags=["match"])
 
 @app.get("/")
 def root():

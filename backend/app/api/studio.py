@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
 from pydantic import BaseModel
 import secrets
 from ..db import get_db_session
-from ..models import Event
+from ..models import Event, User
+from ..utils.auth import get_current_studio_user
 from sqlalchemy.orm import Session
 import sqlalchemy
 import sys
@@ -22,14 +23,26 @@ class RegisterResponse(BaseModel):
     id: int
 
 @router.post("/register", response_model = RegisterResponse)
-def register_event(payload: RegisterRequest, background_tasks: BackgroundTasks):
+def register_event(
+    payload: RegisterRequest, 
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(get_current_studio_user)
+):
+    """
+    Register a new event. Requires studio user authentication.
+    """
     token = secrets.token_urlsafe(16)
     event_code = "EV_" + secrets.token_hex(4)
     # insert into db
     from ..db import SessionLocal
     db: Session = SessionLocal()
     try:
-        ev = Event(event_code = event_code, token = token, storage_path = payload.storage_path)
+        ev = Event(
+            event_code=event_code, 
+            token=token, 
+            storage_path=payload.storage_path,
+            user_id=current_user.id  # Associate event with authenticated user
+        )
         db.add(ev)
         db.commit()
         db.refresh(ev)
@@ -39,7 +52,7 @@ def register_event(payload: RegisterRequest, background_tasks: BackgroundTasks):
     finally:
         db.close()
 
-    qr_link = f"https://app.example.com/e/{event_code}/{token}"
+    qr_link = f"http://localhost:5173/e/{event_code}/{token}"
     
     # Trigger background indexing
     background_tasks.add_task(run_indexer, ev.id, payload.storage_path)
