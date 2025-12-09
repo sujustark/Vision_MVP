@@ -2,7 +2,7 @@
 Authentication API endpoints for user registration and login.
 """
 from fastapi import APIRouter, HTTPException, Depends, status
-from pydantic import BaseModel, EmailStr, validator
+from pydantic import BaseModel, EmailStr, field_validator
 from sqlalchemy.orm import Session
 from ..db import get_db_session
 from ..models import User, UserRole
@@ -23,19 +23,22 @@ class SignupRequest(BaseModel):
     full_name: str
     role: str  # "studio" or "customer"
     
-    @validator('password')
+    @field_validator('password')
+    @classmethod
     def validate_password(cls, v):
         if len(v) < 6:
             raise ValueError('Password must be at least 6 characters long')
         return v
     
-    @validator('role')
+    @field_validator('role')
+    @classmethod
     def validate_role(cls, v):
         if v not in ['studio', 'customer']:
             raise ValueError('Role must be either "studio" or "customer"')
         return v
     
-    @validator('full_name')
+    @field_validator('full_name')
+    @classmethod
     def validate_full_name(cls, v):
         if len(v.strip()) < 2:
             raise ValueError('Full name must be at least 2 characters long')

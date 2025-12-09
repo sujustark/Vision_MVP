@@ -3,7 +3,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { matchFace } from '../api';
 
 function User() {
-    const { eventCode, token: urlToken } = useParams();
+    const { token: urlToken } = useParams();
     const [searchParams] = useSearchParams();
     const tokenFromQuery = searchParams.get('token');
 

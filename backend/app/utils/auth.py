@@ -9,7 +9,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from ..db import get_db_session
-from ..models import User
+from ..models import User, UserRole
 
 # Security configuration
 SECRET_KEY = "your-secret-key-change-this-in-production"  # TODO: Move to environment variable
@@ -129,7 +129,7 @@ def get_current_studio_user(current_user: User = Depends(get_current_user)) -> U
     Raises:
         HTTPException: If user doesn't have studio role
     """
-    if current_user.role != "studio":
+    if current_user.role != UserRole.STUDIO:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only studio users can access this resource",
