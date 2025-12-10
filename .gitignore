@@ -11,9 +11,39 @@ infra/credentials/
 # Bytecode
 __pycache__/
 *.pyc
+*.pyo
+.pytest_cache/
+
+# Database files
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Node modules
+frontend/node_modules/
+
+# Build artifacts
+frontend/dist/
+frontend/buildbackend/app/indices/
+
+# Test files
+**/test_*.py
+!**/migrate_database.py
+
+# Sample/Test images
+sample_images/
 
 # OS files
 .DS_Store
+Thumbs.db
 
 # Docker volumes
 db_data/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
