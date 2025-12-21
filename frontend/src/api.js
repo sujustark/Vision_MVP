@@ -1,10 +1,7 @@
-import axios from 'axios';
+import axios from 'axios'
 
-const API_URL = 'http://localhost:8000/api/v1';
-
-// Create axios instance with default config
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: '/api/v1',
 });
 
 // Add request interceptor to include auth token
@@ -14,19 +11,12 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    return config;
+    return config
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-export const registerEvent = async (storagePath) => {
-  const response = await api.post('/studio/register', { storage_path: storagePath });
-  return response.data;
-};
-
-export const matchFace = async (token, file) => {
+export const registerEvent = async (token, file) => {
   const formData = new FormData();
   formData.append('token', token);
   formData.append('file', file);
@@ -37,5 +27,8 @@ export const matchFace = async (token, file) => {
       'Content-Type': 'multipart/form-data',
     },
   });
+
   return response.data;
 };
+
+export default api;
