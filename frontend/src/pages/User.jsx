@@ -189,7 +189,7 @@ function User() {
                                     backgroundColor: '#f5f5f5'
                                 }}>
                                     <img
-                                        src={`http://localhost:8000/api/v1/images?path=${encodeURIComponent(match.image_path)}`}
+                                        src={`/api/v1/images?path=${encodeURIComponent(match.image_path)}`}
                                         alt="Matched"
                                         style={{
                                             width: '100%',

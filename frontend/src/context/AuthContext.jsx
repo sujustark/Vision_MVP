@@ -1,105 +1,67 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
+import { createContext, useContext, useState } from "react";
+import api from '../api';
 
 const AuthContext = createContext(null);
 
-export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
-    return context;
-};
-
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const [token, setToken] = useState(null);
-    const [loading, setLoading] = useState(true);
-
-    // Load user from localStorage on mount
-    useEffect(() => {
-        const storedToken = localStorage.getItem('token');
-        const storedUser = localStorage.getItem('user');
-
-        if (storedToken && storedUser) {
-            setToken(storedToken);
-            setUser(JSON.parse(storedUser));
-        }
-        setLoading(false);
-    }, []);
+    const [token, setToken] = useState(localStorage.getItem('token'));
 
     const login = async (email, password) => {
         try {
-            const response = await axios.post('http://localhost:8000/api/v1/auth/login', {
-                email,
-                password
-            });
-
-            const { access_token, ...userData } = response.data;
-
+            const response = await api.post('/auth/login', { email, password });
+            const { access_token, user_id, full_name, role } = response.data;
+            const userData = { user_id, email: response.data.email, full_name, role };
+            localStorage.setItem('token', access_token);
             setToken(access_token);
             setUser(userData);
-
-            localStorage.setItem('token', access_token);
-            localStorage.setItem('user', JSON.stringify(userData));
-
-            return { success: true };
+            return { success: true, data: response.data };
         } catch (error) {
             return {
                 success: false,
-                error: error.response?.data?.detail || 'Login failed'
+                error: error.response?.data?.detail || 'Login failed. Please check your credentials.'
             };
         }
     };
 
     const signup = async (email, password, fullName, role) => {
         try {
-            const response = await axios.post('http://localhost:8000/api/v1/auth/signup', {
+            await api.post('/auth/signup', {
                 email,
                 password,
-                full_name: fullName,
-                role
+                full_name: fullName,  // Convert to snake_case for backend
+                role,
             });
-
-            const { access_token, ...userData } = response.data;
-
-            setToken(access_token);
-            setUser(userData);
-
-            localStorage.setItem('token', access_token);
-            localStorage.setItem('user', JSON.stringify(userData));
-
-            return { success: true };
+            // Auto-login after successful signup to get token and user data
+            return await login(email, password);
         } catch (error) {
             return {
                 success: false,
-                error: error.response?.data?.detail || 'Signup failed'
+                error: error.response?.data?.detail || 'Signup failed. Please try again.'
             };
         }
     };
 
     const logout = () => {
+        localStorage.removeItem('token');
         setToken(null);
         setUser(null);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-    };
-
-    const value = {
-        user,
-        token,
-        loading,
-        login,
-        signup,
-        logout,
-        isAuthenticated: !!token,
-        isStudio: user?.role === 'studio',
-        isCustomer: user?.role === 'customer'
     };
 
     return (
-        <AuthContext.Provider value={value}>
+        <AuthContext.Provider
+            value={{
+                user,
+                token,
+                login,
+                signup,
+                logout,
+                isAuthenticated: !!token,
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );
 };
+
+export const useAuth = () => useContext(AuthContext);
