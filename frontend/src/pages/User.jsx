@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { matchFace } from '../api';
+import jsQR from 'jsqr';
 
 function User() {
     const { token: urlToken } = useParams();
@@ -9,6 +10,8 @@ function User() {
 
     const [token, setToken] = useState(urlToken || tokenFromQuery || '');
     const [manualToken, setManualToken] = useState('');
+    const [qrError, setQrError] = useState(null);
+    const [qrSuccess, setQrSuccess] = useState(false);
     const [file, setFile] = useState(null);
     const [preview, setPreview] = useState(null);
     const [matches, setMatches] = useState([]);
@@ -20,6 +23,74 @@ function User() {
             setToken(urlToken || tokenFromQuery);
         }
     }, [urlToken, tokenFromQuery]);
+
+    const handleQRUpload = async (e) => {
+        if (e.target.files && e.target.files[0]) {
+            const qrFile = e.target.files[0];
+            setQrError(null);
+            setQrSuccess(false);
+
+            // Read the image and decode QR
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    // Create canvas to extract image data
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+                    // Decode QR code
+                    const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+                    if (code) {
+                        // Extract token from URL
+                        const qrUrl = code.data;
+                        console.log('QR Code decoded:', qrUrl);
+
+                        // Try to extract token from various URL formats
+                        // Format 1: /e/:eventCode/:token
+                        // Format 2: ?token=xxx
+                        let extractedToken = null;
+
+                        try {
+                            const url = new URL(qrUrl);
+                            // Check query param
+                            if (url.searchParams.get('token')) {
+                                extractedToken = url.searchParams.get('token');
+                            } else {
+                                // Check path segments (e.g., /e/eventCode/token)
+                                const pathParts = url.pathname.split('/').filter(Boolean);
+                                if (pathParts.length >= 3 && pathParts[0] === 'e') {
+                                    extractedToken = pathParts[2];
+                                } else if (pathParts.length >= 2) {
+                                    // Fallback: use the last path segment as token
+                                    extractedToken = pathParts[pathParts.length - 1];
+                                }
+                            }
+                        } catch {
+                            // If not a valid URL, treat the whole QR data as token
+                            extractedToken = qrUrl;
+                        }
+
+                        if (extractedToken) {
+                            setManualToken(extractedToken);
+                            setQrSuccess(true);
+                        } else {
+                            setQrError('Could not extract token from QR code');
+                        }
+                    } else {
+                        setQrError('No QR code found in the image. Please try a clearer photo.');
+                    }
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(qrFile);
+        }
+    };
 
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files[0]) {
@@ -65,21 +136,53 @@ function User() {
 
             {!token && (
                 <div className="token-input-section" style={{ marginBottom: '2rem' }}>
-                    <p>Enter your event token:</p>
+                    <p style={{ marginBottom: '1rem', color: 'var(--text-secondary)' }}>
+                        Upload a photo of the event QR code:
+                    </p>
+                    <label htmlFor="qr-upload" style={{
+                        display: 'inline-block',
+                        padding: '0.75rem 1.5rem',
+                        backgroundColor: 'var(--accent)',
+                        color: '#0f172a',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontWeight: 600
+                    }}>
+                        Choose QR Image
+                    </label>
                     <input
-                        type="text"
-                        placeholder="Event Token (e.g., R6GEyBfhhD_u0PFSGmjA9g)"
-                        value={manualToken}
-                        onChange={(e) => setManualToken(e.target.value)}
-                        style={{
-                            width: '100%',
-                            padding: '0.75rem',
-                            marginBottom: '1rem',
-                            border: '2px solid #e0e0e0',
-                            borderRadius: '8px',
-                            fontSize: '1rem'
-                        }}
+                        id="qr-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleQRUpload}
+                        style={{ display: 'none' }}
                     />
+
+                    {qrError && (
+                        <div style={{
+                            marginTop: '1rem',
+                            padding: '0.75rem',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            border: '1px solid var(--error)',
+                            borderRadius: '8px',
+                            color: 'var(--error)'
+                        }}>
+                            {qrError}
+                        </div>
+                    )}
+
+                    {qrSuccess && (
+                        <div style={{
+                            marginTop: '1rem',
+                            padding: '0.75rem',
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            border: '1px solid var(--success)',
+                            borderRadius: '8px',
+                            color: 'var(--success)'
+                        }}>
+                            ✓ Token extracted: {manualToken.substring(0, 15)}...
+                        </div>
+                    )}
                 </div>
             )}
 

@@ -6,6 +6,7 @@ import '../index.css';
 function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -55,15 +56,30 @@ function Login() {
 
                     <div className="form-group">
                         <label htmlFor="password">Password</label>
-                        <input
-                            type="password"
-                            id="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            placeholder="••••••••"
-                            disabled={loading}
-                        />
+                        <div className="password-input-wrapper">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                id="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                                placeholder="••••••••"
+                                disabled={loading}
+                            />
+                            <button
+                                type="button"
+                                className="password-toggle"
+                                onClick={() => setShowPassword(!showPassword)}
+                                onMouseDown={(e) => e.preventDefault()}
+                                tabIndex={-1}
+                            >
+                                <img
+                                    src="/src/assets/eye-icon.png"
+                                    alt="Toggle password visibility"
+                                    className={showPassword ? 'eye-open' : 'eye-closed'}
+                                />
+                            </button>
+                        </div>
                     </div>
 
                     <button type="submit" disabled={loading} className="btn-primary">

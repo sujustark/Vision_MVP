@@ -6,6 +6,7 @@ import '../index.css';
 function Signup() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [fullName, setFullName] = useState('');
     const [role, setRole] = useState('customer');
     const [error, setError] = useState('');
@@ -76,15 +77,30 @@ function Signup() {
 
                     <div className="form-group">
                         <label htmlFor="password">Password</label>
-                        <input
-                            type="password"
-                            id="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            placeholder="At least 6 characters"
-                            disabled={loading}
-                        />
+                        <div className="password-input-wrapper">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                id="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                                placeholder="At least 6 characters"
+                                disabled={loading}
+                            />
+                            <button
+                                type="button"
+                                className="password-toggle"
+                                onClick={() => setShowPassword(!showPassword)}
+                                onMouseDown={(e) => e.preventDefault()}
+                                tabIndex={-1}
+                            >
+                                <img
+                                    src="/src/assets/eye-icon.png"
+                                    alt="Toggle password visibility"
+                                    className={showPassword ? 'eye-open' : 'eye-closed'}
+                                />
+                            </button>
+                        </div>
                     </div>
 
                     <div className="form-group">
@@ -92,7 +108,10 @@ function Signup() {
                         <select
                             id="role"
                             value={role}
-                            onChange={(e) => setRole(e.target.value)}
+                            onChange={(e) => {
+                                setRole(e.target.value);
+                                e.target.blur();
+                            }}
                             disabled={loading}
                         >
                             <option value="customer">Customer (Looking for my photos)</option>

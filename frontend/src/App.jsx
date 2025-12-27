@@ -49,8 +49,8 @@ function App() {
                 <div className="landing">
                   <h1>Vision MVP</h1>
                   <p>Find your event photos with AI-powered face recognition</p>
-                  <div style={{ marginTop: '2rem' }}>
-                    <a href="/login" style={{ marginRight: '1rem' }}>
+                  <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <a href="/login">
                       <button className="btn-primary">Login</button>
                     </a>
                     <a href="/signup">
